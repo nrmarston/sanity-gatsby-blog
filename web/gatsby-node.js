@@ -97,3 +97,30 @@ exports.createPages = async ({graphql, actions}) => {
   await createBlogPostPages(graphql, actions)
   await createCategoryPages(graphql, actions) // <= add the function here
 }
+
+exports.createResolvers = ({createResolvers}) => {
+  const resolvers = {
+    SanityCategory: {
+      posts: {
+        type: ['SanityPost'],
+        resolve (source, args, context, info) {
+          return context.nodeModel.runQuery({
+            type: 'SanityPost',
+            query: {
+              filter: {
+                categories: {
+                  elemMatch: {
+                    _id: {
+                      eq: source._id
+                    }
+                  }
+                }
+              }
+            }
+          })
+        }
+      }
+    }
+  }
+  createResolvers(resolvers)
+}
